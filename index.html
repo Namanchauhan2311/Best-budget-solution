@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildBudget — describe your project, get your budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --card:#ffffff; --ink:#1f1d1a; --muted:#6b665e; --line:#e6e0d6;
+  --accent:#c2551d; --accent-ink:#ffffff; --accent-soft:#fbeadf; --ok:#2f6f4f; --ok-soft:#e3f1ea;
+  --bar:#c2551d; --bar2:#e8b894; --warn:#8a5a00; --warn-soft:#fff2d6;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#161412; --card:#201d1a; --ink:#f1ede6; --muted:#a39d92; --line:#352f29;
+    --accent:#e0743a; --accent-ink:#1a0e06; --accent-soft:#3a2415; --ok:#7bc59c; --ok-soft:#1c2f25;
+    --bar:#e0743a; --bar2:#6b4630; --warn:#f0c36a; --warn-soft:#3a2f12; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 18px 64px}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.01em}
+.mark{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.mark svg{width:18px;height:18px}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+h1{font-size:clamp(28px,5.5vw,42px);line-height:1.1;letter-spacing:-.03em;margin:0 0 10px;font-weight:700}
+.sub{color:var(--muted);margin:0 0 22px;font-size:17px}
+.ask{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.ask:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{width:100%;min-height:112px;resize:vertical;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:17px;line-height:1.5}
+textarea::placeholder{color:var(--muted)}
+.askbar{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px;margin-top:6px;flex-wrap:wrap}
+.hint{font-size:13px;color:var(--muted)}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:11px;padding:10px 18px;font-weight:600}
+.btn:hover{filter:brightness(1.05)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:9px 14px;font-weight:500}
+.ghost:hover{border-color:var(--accent)}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.ex{background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--muted);text-align:left}
+.ex:hover{border-color:var(--accent);color:var(--ink)}
+#out{margin-top:26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:16px}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:0 0 6px}
+.range{font-size:clamp(30px,7vw,46px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:0}
+.range span{color:var(--muted);font-weight:500;padding:0 .2em}
+.persq{color:var(--muted);margin:8px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.chip{font-size:13.5px;padding:4px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-weight:500}
+.chip.a{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.lbl{font-size:13px;color:var(--muted);margin:14px 0 0}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 14px;font-size:14.5px;margin-bottom:16px}
+h2{font-size:17px;margin:0 0 14px;letter-spacing:-.01em}
+.trade{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;padding:7px 0;font-size:14.5px}
+.trade .bar{height:10px;border-radius:6px;background:var(--bar2);position:relative;overflow:hidden}
+.trade .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:6px}
+.trade .amt{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:560px){.trade{grid-template-columns:1fr auto}.trade .bar{grid-column:1/-1;order:3}}
+details.boq>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.boq>summary::-webkit-details-marker{display:none}
+details.boq>summary:after{content:"Show";font-weight:500;color:var(--accent);font-size:14px}
+details.boq[open]>summary:after{content:"Hide"}
+.tbl{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th,td{padding:8px 8px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+th:first-child,td:first-child{text-align:left}
+tr.g td{background:var(--accent-soft);font-weight:600;text-align:left;border-bottom:0}
+tr.tot td{font-weight:700;border-bottom:0}
+.excl{margin:0;padding-left:20px;color:var(--muted);font-size:14.5px}
+.excl li{margin:3px 0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+#copybox{width:100%;margin-top:12px;min-height:140px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink);font:13px/1.5 ui-monospace,Menlo,monospace}
+.empty{color:var(--muted);text-align:center;padding:28px 10px}
+.admin{margin-top:34px;border-top:1px dashed var(--line);padding-top:16px;font-size:14px}
+.admin summary{cursor:pointer;color:var(--muted)}
+.admin input{width:84px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink);font:inherit;text-align:right}
+.admin td:first-child{max-width:330px}
+footer{color:var(--muted);font-size:13px;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/></svg></div>BuildBudget</div>
+    <span class="tag">Prototype · Step 1</span>
+  </header>
+
+  <h1>Tell us what you want to build.</h1>
+  <p class="sub">Write it the way you'd say it. You'll get an itemised budget, every line covered.</p>
+
+  <div class="ask">
+    <textarea id="req" placeholder="Example: I want to build a 3 BHK house on a 200 sq yard plot in Ghaziabad, two floors, standard finish, with a boundary wall." autofocus></textarea>
+    <div class="askbar">
+      <span class="hint">Size, floors, rooms, finish and city help the most. Anything you leave out, we assume.</span>
+      <button class="btn" id="go">Get my budget</button>
+    </div>
+  </div>
+  <div class="examples" id="examples"></div>
+
+  <div id="out"></div>
+
+  <details class="admin" id="admin">
+    <summary>For admin: edit rates (indicative placeholders)</summary>
+    <p class="hint">These are starter rates for Delhi NCR residential work. Replace them with verified vendor and contractor rates. Edits apply to the finish level of the current request and are saved in this browser only.</p>
+    <div class="tbl"><table id="rates"></table></div>
+    <p><button class="ghost" id="resetRates">Reset all rates</button></p>
+  </details>
+
+  <footer>Estimates are indicative ranges, not quotations. Final prices depend on site conditions, design and vendor quotes.</footer>
+</div>
+
+<script>
+/* BuildBudget engine — requirement text -> structured inputs -> itemised BOQ range.
+   Rates are INDICATIVE PLACEHOLDERS (Delhi NCR, residential new build) until replaced by a verified rate table. */
+
+const TIERS = ['basic', 'standard', 'premium'];
+
+const LOCATIONS = {
+  'Delhi NCR': 1.0, 'Delhi': 1.0, 'Gurugram': 1.06, 'Noida': 1.0,
+  'Greater Noida': 0.97, 'Ghaziabad': 0.95, 'Faridabad': 0.95,
+};
+const LOCATION_ALIASES = [
+  [/gurgaon|gurugram/, 'Gurugram'], [/greater noida/, 'Greater Noida'], [/noida/, 'Noida'],
+  [/ghaziabad|vaishali|indirapuram/, 'Ghaziabad'], [/faridabad/, 'Faridabad'],
+  [/delhi|dwarka|rohini|saket|pitampura/, 'Delhi'],
+];
+
+const MARKUPS = { oh: [0.06, 0.10], cont: [0.03, 0.05], gst: 0.18 };
+
+// qty helpers: p = {A (built-up sqft), F floors, BR, BA, K, plot, tier, loc, opts}
+const foot = p => p.A / p.F;
+const plotArea = p => (p.plot > 0 ? p.plot : foot(p) / 0.7);
+
+const ITEMS = [
+  // trade, item, unit, qty, rates per tier [low, high] in INR per unit
+  { id: 'exc', trade: 'Site & foundation', item: 'Site clearing, excavation & backfilling', unit: 'sq ft footprint', qty: foot, rates: { basic: [35, 50], standard: [40, 55], premium: [45, 65] } },
+  { id: 'fnd', trade: 'Site & foundation', item: 'Foundation: footings, PCC, plinth beam, DPC', unit: 'sq ft footprint', qty: foot, rates: { basic: [230, 290], standard: [250, 310], premium: [270, 340] } },
+  { id: 'rcc', trade: 'RCC structure', item: 'RCC columns, beams & slabs (cement, steel, aggregate, labour)', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [640, 740], standard: [710, 810], premium: [790, 910] } },
+  { id: 'stair', trade: 'RCC structure', item: 'Staircase (RCC, finish & railing)', unit: 'flight', qty: p => p.F, rates: { basic: [45000, 65000], standard: [70000, 110000], premium: [130000, 220000] } },
+  { id: 'brick', trade: 'Masonry & plaster', item: 'Brick / block masonry (external & internal walls)', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [125, 150], standard: [140, 165], premium: [160, 190] } },
+  { id: 'plaster', trade: 'Masonry & plaster', item: 'Internal & external plaster', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [85, 105], standard: [95, 120], premium: [110, 135] } },
+  { id: 'wp_t', trade: 'Waterproofing', item: 'Terrace waterproofing & screed', unit: 'sq ft footprint', qty: foot, rates: { basic: [45, 60], standard: [60, 85], premium: [85, 125] } },
+  { id: 'wp_b', trade: 'Waterproofing', item: 'Bathroom waterproofing', unit: 'bathroom', qty: p => p.BA, rates: { basic: [8000, 12000], standard: [10000, 15000], premium: [15000, 22000] } },
+  { id: 'floor', trade: 'Flooring & tiling', item: 'Flooring (vitrified / stone) with skirting', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [90, 120], standard: [140, 200], premium: [260, 450] } },
+  { id: 'bathtile', trade: 'Flooring & tiling', item: 'Bathroom wall & floor tiling', unit: 'bathroom', qty: p => p.BA, rates: { basic: [30000, 40000], standard: [40000, 60000], premium: [70000, 120000] } },
+  { id: 'kitchen', trade: 'Kitchen', item: 'Kitchen platform, sink, wall tiling & cabinets', unit: 'kitchen', qty: p => p.K, rates: { basic: [60000, 90000], standard: [120000, 200000], premium: [350000, 700000] } },
+  { id: 'doors', trade: 'Doors & windows', item: 'Doors, windows, grills & hardware', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [55, 70], standard: [80, 110], premium: [140, 220] } },
+  { id: 'elec', trade: 'Electrical', item: 'Conduit, wiring, switches, DB & earthing', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [70, 90], standard: [90, 120], premium: [130, 190] } },
+  { id: 'plumb', trade: 'Plumbing & sanitary', item: 'Water supply & drainage lines', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [45, 60], standard: [55, 75], premium: [70, 100] } },
+  { id: 'sanit', trade: 'Plumbing & sanitary', item: 'Sanitary ware & CP fittings', unit: 'bathroom', qty: p => p.BA, rates: { basic: [28000, 40000], standard: [45000, 70000], premium: [90000, 180000] } },
+  { id: 'water', trade: 'Plumbing & sanitary', item: 'Sump, overhead tank, borewell / rainwater pit', unit: 'lump sum', qty: () => 1, rates: { basic: [80000, 120000], standard: [120000, 200000], premium: [200000, 350000] } },
+  { id: 'paint', trade: 'Painting & finishing', item: 'Putty, primer & paint (paintable area about 3x built-up)', unit: 'sq ft paintable', qty: p => p.A * 3, rates: { basic: [18, 24], standard: [26, 34], premium: [38, 55] } },
+  { id: 'ext', trade: 'Painting & finishing', item: 'External elevation finish', unit: 'sq ft built-up', qty: p => p.A, rates: { basic: [20, 30], standard: [35, 60], premium: [70, 130] } },
+  // optional extras (only when the customer asks for them)
+  { id: 'boundary', trade: 'Extras', item: 'Boundary wall', unit: 'running ft', qty: p => 4 * Math.sqrt(plotArea(p)), on: p => p.opts.boundary, rates: { basic: [1100, 1400], standard: [1300, 1700], premium: [1700, 2600] } },
+  { id: 'gate', trade: 'Extras', item: 'Main gate', unit: 'nos', qty: () => 1, on: p => p.opts.boundary, rates: { basic: [40000, 60000], standard: [60000, 100000], premium: [120000, 300000] } },
+  { id: 'lift', trade: 'Extras', item: 'Passenger lift', unit: 'nos', qty: () => 1, on: p => p.opts.lift, rates: { basic: [700000, 900000], standard: [900000, 1300000], premium: [1300000, 2200000] } },
+  { id: 'solar', trade: 'Extras', item: 'Rooftop solar (3 kW)', unit: 'kW', qty: () => 3, on: p => p.opts.solar, rates: { basic: [55000, 65000], standard: [58000, 70000], premium: [65000, 80000] } },
+  { id: 'wardrobe', trade: 'Extras', item: 'Modular wardrobes', unit: 'bedroom', qty: p => p.BR, on: p => p.opts.wardrobes, rates: { basic: [60000, 90000], standard: [100000, 160000], premium: [200000, 400000] } },
+  { id: 'ceiling', trade: 'Extras', item: 'False ceiling (about 60% of area)', unit: 'sq ft', qty: p => p.A * 0.6, on: p => p.opts.falseCeiling, rates: { basic: [65, 85], standard: [85, 120], premium: [130, 220] } },
+];
+
+function rateFor(it, tier, ov) {
+  const o = ov && ov[it.id] && ov[it.id][tier];
+  return o || it.rates[tier];
+}
+
+function compute(p, ov) {
+  const f = LOCATIONS[p.loc] || 1;
+  const lines = [];
+  for (const it of ITEMS) {
+    if (it.on && !it.on(p)) continue;
+    const qty = it.qty(p);
+    if (!(qty > 0)) continue;
+    const [rl, rh] = rateFor(it, p.tier, ov);
+    lines.push({ id: it.id, trade: it.trade, item: it.item, unit: it.unit, qty, rateLo: rl * f, rateHi: rh * f, lo: qty * rl * f, hi: qty * rh * f });
+  }
+  const trades = [];
+  for (const l of lines) {
+    let t = trades.find(x => x.trade === l.trade);
+    if (!t) { t = { trade: l.trade, lo: 0, hi: 0 }; trades.push(t); }
+    t.lo += l.lo; t.hi += l.hi;
+  }
+  const subLo = lines.reduce((s, l) => s + l.lo, 0);
+  const subHi = lines.reduce((s, l) => s + l.hi, 0);
+  const ohLo = subLo * MARKUPS.oh[0], ohHi = subHi * MARKUPS.oh[1];
+  const contLo = subLo * MARKUPS.cont[0], contHi = subHi * MARKUPS.cont[1];
+  const preLo = subLo + ohLo + contLo, preHi = subHi + ohHi + contHi;
+  const gstLo = p.gst ? preLo * MARKUPS.gst : 0, gstHi = p.gst ? preHi * MARKUPS.gst : 0;
+  const totalLo = preLo + gstLo, totalHi = preHi + gstHi;
+  return { lines, trades, subLo, subHi, ohLo, ohHi, contLo, contHi, gstLo, gstHi, totalLo, totalHi, perSqftLo: totalLo / p.A, perSqftHi: totalHi / p.A };
+}
+
+/* ---------- Requirement text -> inputs ---------- */
+
+const NUM_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+const AREA_RE = '(\\d+(?:\\.\\d+)?)\\s*(sq\\.?\\s?ft|sqft|sft|square\\s?(?:feet|foot)|sq\\.?\\s?yards?|sq\\.?\\s?yd|sqyd|yards?|gaj|sq\\.?\\s?m(?:eters?|etres?)?|sqm|square\\s?met\\w+)';
+const OTHER_WORK_RE = /renovat|remodel|repair|retrofit|commercial|factory|warehouse|showroom|shop\b|office building|hospital|school|\broad\b|bridge|treatment plant|\bstp\b|\bwtp\b|\betp\b/;
+
+function toSqft(n, unit) {
+  const u = unit.toLowerCase();
+  if (/yard|yd|gaj/.test(u)) return n * 9;
+  if (/m(eter|etre)?s?$|sqm|sq\.?\s?m/.test(u) && !/ft|feet|foot/.test(u)) return n * 10.7639;
+  return n;
+}
+
+function parseRequirement(raw) {
+  const text = (raw || '').toLowerCase().replace(/(\d),(\d)/g, '$1$2').replace(/\b(one|two|three|four|five|six)\b/g, (_, w) => NUM_WORDS[w]);
+  const out = { understood: [], assumed: [], warnings: [], blocked: null, p: null };
+  if (!text.trim()) return out;
+
+  const other = text.match(OTHER_WORK_RE);
+  if (other) { out.blocked = other[0].trim(); return out; }
+
+  const v = { opts: {} };
+
+  // areas: plot vs built-up
+  const re = new RegExp(AREA_RE, 'g');
+  let m;
+  while ((m = re.exec(text))) {
+    const sqft = toSqft(parseFloat(m[1]), m[2]);
+    const after = text.slice(re.lastIndex, re.lastIndex + 14);
+    const before = text.slice(Math.max(0, m.index - 20), m.index);
+    if (/^\s*(of\s*)?plot/.test(after) || /plot\s*(of|size|area)?\s*:?\s*$/.test(before)) { if (!v.plot) v.plot = sqft; }
+    else if (!v.A) v.A = sqft;
+  }
+
+  // floors
+  let mm;
+  if ((mm = text.match(/g\s*\+\s*(\d)/))) v.F = 1 + parseInt(mm[1]);
+  else if ((mm = text.match(/(\d)\s*(?:floors?|storey\w*|story|stories)/))) v.F = parseInt(mm[1]);
+  else if (/duplex/.test(text)) v.F = 2;
+  else if (/triplex/.test(text)) v.F = 3;
+  else if (/single\s*(floor|storey|story)|ground floor only|bungalow/.test(text)) v.F = 1;
+
+  // rooms
+  if ((mm = text.match(/(\d)\s*bhk/))) { v.BR = parseInt(mm[1]); v.bhk = true; }
+  else if ((mm = text.match(/(\d)\s*(?:bed\s?rooms?|\bbr\b|beds?\b)/))) v.BR = parseInt(mm[1]);
+  if ((mm = text.match(/(\d)\s*(?:bath\s?rooms?|toilets?|washrooms?|baths?\b)/))) v.BA = parseInt(mm[1]);
+  if ((mm = text.match(/(\d)\s*kitchens?/))) v.K = parseInt(mm[1]);
+
+  // finish
+  if (/premium|luxury|luxurious|high[- ]end|italian|imported|marble/.test(text)) v.tier = 'premium';
+  else if (/basic|economy|economical|budget|low[- ]cost|simple|affordable/.test(text)) v.tier = 'basic';
+  else if (/standard|mid[- ]?range|medium|normal/.test(text)) v.tier = 'standard';
+
+  // location
+  for (const [re2, name] of LOCATION_ALIASES) if (re2.test(text)) { v.loc = name; break; }
+
+  // extras
+  if (/boundary|compound wall|gate/.test(text)) v.opts.boundary = true;
+  if (/\blift\b|elevator/.test(text)) v.opts.lift = true;
+  if (/solar/.test(text)) v.opts.solar = true;
+  if (/wardrobe/.test(text)) v.opts.wardrobes = true;
+  if (/false ceiling|pop ceiling|gypsum ceiling/.test(text)) v.opts.falseCeiling = true;
+  if (/\bgst\b/.test(text)) v.gst = true;
+
+  // ---- defaults & assumptions ----
+  const u = out.understood, a = out.assumed;
+  const fmt = n => Math.round(n).toLocaleString('en-IN');
+
+  const F = v.F || 1;
+  if (v.F) u.push(`${F} floor${F > 1 ? 's' : ''}`); else a.push('1 floor (ground only)');
+
+  let A = v.A;
+  if (A) u.push(`${fmt(A)} sq ft built-up`);
+  else if (v.plot) {
+    A = Math.round(v.plot * 0.7 * F);
+    u.push(`${fmt(v.plot)} sq ft plot`);
+    a.push(`${fmt(A)} sq ft built-up (70% of the plot on each floor)`);
+  } else if (v.BR) {
+    A = v.BR * 600 * (v.bhk ? 1 : 1);
+    a.push(`${fmt(A)} sq ft built-up (about 600 sq ft per bedroom)`);
+  }
+  if (v.plot && v.A) u.push(`${fmt(v.plot)} sq ft plot`);
+  if (!A) { out.warnings.push('size'); return out; }
+
+  const BR = v.BR || Math.max(1, Math.round(A / 600));
+  if (v.BR) u.push(`${BR} bedroom${BR > 1 ? 's' : ''}`); else a.push(`${BR} bedroom${BR > 1 ? 's' : ''}`);
+  const BA = v.BA || BR;
+  if (v.BA) u.push(`${BA} bathroom${BA > 1 ? 's' : ''}`); else a.push(`${BA} bathroom${BA > 1 ? 's' : ''}`);
+  const K = v.K || 1;
+  if (v.K) u.push(`${K} kitchen${K > 1 ? 's' : ''}`); else a.push('1 kitchen');
+
+  const tier = v.tier || 'standard';
+  if (v.tier) u.push(`${tier} finish`); else a.push('standard finish');
+  const loc = v.loc || 'Delhi NCR';
+  if (v.loc) u.push(loc); else a.push('Delhi NCR average rates');
+
+  const extras = { boundary: 'boundary wall & gate', lift: 'lift', solar: 'solar', wardrobes: 'wardrobes', falseCeiling: 'false ceiling' };
+  for (const k of Object.keys(extras)) if (v.opts[k]) u.push(extras[k]);
+  if (v.gst) u.push('GST included');
+
+  if (A < 200 || A > 50000) out.warnings.push('Size looks unusual. Please check it.');
+  if (A / F < 150) out.warnings.push('That is very little area per floor. Please check the size and floors.');
+
+  out.p = { A, F, BR, BA, K, plot: v.plot || 0, tier, loc, opts: v.opts, gst: !!v.gst };
+  return out;
+}
+
+if (typeof module !== 'undefined') module.exports = { ITEMS, TIERS, LOCATIONS, MARKUPS, compute, parseRequirement };
+
+</script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const req = $('#req'), out = $('#out');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const EXAMPLES = [
+    '3 BHK house, 1800 sq ft, G+1, standard finish in Noida',
+    'Villa on a 300 sq yard plot in Gurugram, premium finish, lift and solar',
+    '2 BHK home 1100 sq ft, budget finish, Ghaziabad'
+  ];
+
+  let overrides = {};
+  try { overrides = JSON.parse(localStorage.getItem('bb_rates') || '{}') || {}; } catch (e) { overrides = {}; }
+  const saveOv = () => { try { localStorage.setItem('bb_rates', JSON.stringify(overrides)); } catch (e) {} };
+
+  function inr(n){ return Math.round(n).toLocaleString('en-IN'); }
+  function money(n){
+    if (n >= 1e7) return '₹' + (n / 1e7).toFixed(2) + ' Cr';
+    if (n >= 1e5) return '₹' + (n / 1e5).toFixed(1) + ' L';
+    return '₹' + inr(n);
+  }
+  function qtyFmt(q){ return q >= 100 ? inr(q) : (Math.round(q * 10) / 10).toLocaleString('en-IN'); }
+
+  let last = null; // last successful {p,res,parsed}
+
+  function render(){
+    const text = req.value;
+    if (!text.trim()){ last = null; out.innerHTML = '<div class="empty">Your budget will appear here as you type.</div>'; renderRates(); return; }
+    const parsed = parseRequirement(text);
+
+    if (parsed.blocked){
+      last = null;
+      out.innerHTML = '<div class="card"><p class="eyebrow">Not covered yet</p><h2 style="margin:0 0 6px">This looks like a different type of work.</h2><p class="persq">This first version prices <b>new residential houses</b> only. Renovation, commercial and industrial work are planned for later steps. If you also want a new house priced, describe just that part.</p></div>';
+      renderRates(); return;
+    }
+    if (!parsed.p){
+      last = null;
+      out.innerHTML = '<div class="card"><p class="eyebrow">One more detail</p><h2 style="margin:0 0 6px">How big is it?</h2><p class="persq">Add the size, for example <b>1800 sq ft</b> built-up, or a plot such as <b>200 sq yard plot</b>. The number of bedrooms (like <b>3 BHK</b>) also works.</p></div>';
+      renderRates(); return;
+    }
+
+    const p = parsed.p, res = compute(p, overrides);
+    last = { p, res, parsed };
+
+    const chips = parsed.understood.map(x => '<span class="chip">' + esc(x) + '</span>').join('') +
+                  parsed.assumed.map(x => '<span class="chip a">assumed: ' + esc(x) + '</span>').join('');
+    const warn = parsed.warnings.map(w => '<div class="note">' + esc(w) + '</div>').join('');
+
+    const maxHi = Math.max.apply(null, res.trades.map(t => t.hi));
+    const tradeRows = res.trades.map(t => {
+      const mid = (t.lo + t.hi) / 2, share = Math.round(mid / ((res.subLo + res.subHi) / 2) * 100);
+      return '<div class="trade"><div>' + esc(t.trade) + '<br><span class="hint">' + share + '% of works</span></div>' +
+        '<div class="bar"><i style="width:' + Math.round(t.hi / maxHi * 100) + '%"></i></div>' +
+        '<div class="amt">' + money(t.lo) + ' – ' + money(t.hi) + '</div></div>';
+    }).join('');
+
+    let rows = '', cur = '';
+    for (const l of res.lines){
+      if (l.trade !== cur){ cur = l.trade; rows += '<tr class="g"><td colspan="5">' + esc(cur) + '</td></tr>'; }
+      rows += '<tr><td>' + esc(l.item) + '</td><td>' + qtyFmt(l.qty) + ' ' + esc(l.unit) + '</td><td>₹' + inr(l.rateLo) + ' – ' + inr(l.rateHi) + '</td><td>₹' + inr(l.lo) + '</td><td>₹' + inr(l.hi) + '</td></tr>';
+    }
+    const ex = (label, lo, hi) => '<tr><td colspan="3">' + label + '</td><td>₹' + inr(lo) + '</td><td>₹' + inr(hi) + '</td></tr>';
+    rows += '<tr class="g"><td colspan="5">Add-ons</td></tr>' +
+      ex('Site supervision, scaffolding &amp; contractor margin (' + Math.round(MARKUPS.oh[0]*100) + '–' + Math.round(MARKUPS.oh[1]*100) + '%)', res.ohLo, res.ohHi) +
+      ex('Contingency (' + Math.round(MARKUPS.cont[0]*100) + '–' + Math.round(MARKUPS.cont[1]*100) + '%)', res.contLo, res.contHi) +
+      (p.gst ? ex('GST (' + Math.round(MARKUPS.gst*100) + '%, indicative)', res.gstLo, res.gstHi) : '') +
+      '<tr class="tot"><td colspan="3">Total</td><td>₹' + inr(res.totalLo) + '</td><td>₹' + inr(res.totalHi) + '</td></tr>';
+
+    out.innerHTML =
+      warn +
+      '<div class="card"><p class="eyebrow">Estimated budget</p>' +
+      '<p class="range">' + money(res.totalLo) + '<span>to</span>' + money(res.totalHi) + '</p>' +
+      '<p class="persq">About ₹' + inr(res.perSqftLo) + ' – ' + inr(res.perSqftHi) + ' per sq ft on ' + inr(p.A) + ' sq ft built-up' + (p.gst ? ' (GST included)' : '') + '</p>' +
+      '<div class="chips">' + chips + '</div>' +
+      '<p class="lbl">Not right? Edit your description above and the budget updates.</p></div>' +
+
+      '<div class="card"><h2>Where the money goes</h2>' + tradeRows + '</div>' +
+
+      '<div class="card"><details class="boq"><summary>Full itemised budget (' + res.lines.length + ' items)</summary>' +
+      '<div class="tbl"><table><thead><tr><th>Item</th><th>Quantity</th><th>Rate (₹)</th><th>Low</th><th>High</th></tr></thead><tbody>' + rows + '</tbody></table></div></details></div>' +
+
+      '<div class="card"><h2>Not included</h2><ul class="excl">' +
+      '<li>Land, registry and stamp duty</li><li>Architect, structural engineer and sanction / approval fees</li>' +
+      '<li>Electricity, water and sewer connection charges</li><li>Furniture, curtains, appliances and interior work' + (p.opts.wardrobes || p.opts.falseCeiling ? ' (other than the extras listed)' : '') + '</li>' +
+      '<li>Landscaping, and any soil or site problems found later</li></ul></div>' +
+
+      '<div class="actions"><button class="btn" disabled title="Coming in the next step">Get quotes from vendors (next step)</button>' +
+      '<button class="ghost" id="copy">Copy itemised budget</button></div><div id="copyslot"></div>';
+
+    const c = $('#copy'); if (c) c.onclick = copyBoq;
+    renderRates();
+  }
+
+  function boqText(){
+    const { p, res } = last;
+    const L = ['BUILDBUDGET ESTIMATE (indicative)', 'Area: ' + inr(p.A) + ' sq ft | Floors: ' + p.F + ' | Finish: ' + p.tier + ' | ' + p.loc, ''];
+    let cur = '';
+    for (const l of res.lines){
+      if (l.trade !== cur){ cur = l.trade; L.push(cur.toUpperCase()); }
+      L.push('- ' + l.item + ': ' + qtyFmt(l.qty) + ' ' + l.unit + ' @ Rs ' + inr(l.rateLo) + '-' + inr(l.rateHi) + ' = Rs ' + inr(l.lo) + ' to ' + inr(l.hi));
+    }
+    L.push('', 'Total: Rs ' + inr(res.totalLo) + ' to Rs ' + inr(res.totalHi));
+    return L.join('\n');
+  }
+  function copyBoq(){
+    if (!last) return;
+    const t = boqText();
+    const slot = $('#copyslot');
+    const showBox = () => { slot.innerHTML = '<textarea id="copybox" readonly></textarea>'; const b = $('#copybox'); b.value = t; b.focus(); b.select(); };
+    try { navigator.clipboard.writeText(t).then(() => { slot.innerHTML = '<p class="hint">Copied.</p>'; }, showBox); } catch (e) { showBox(); }
+  }
+
+  function renderRates(){
+    const tier = last ? last.p.tier : 'standard';
+    let h = '<thead><tr><th>Item (' + tier + ' finish)</th><th>Unit</th><th>Low ₹</th><th>High ₹</th></tr></thead><tbody>';
+    for (const it of ITEMS){
+      const r = rateFor(it, tier, overrides);
+      h += '<tr><td>' + esc(it.item) + '</td><td>' + esc(it.unit) + '</td>' +
+        '<td><input type="number" min="0" data-id="' + it.id + '" data-k="0" value="' + r[0] + '"></td>' +
+        '<td><input type="number" min="0" data-id="' + it.id + '" data-k="1" value="' + r[1] + '"></td></tr>';
+    }
+    $('#rates').innerHTML = h + '</tbody>';
+  }
+  $('#rates').addEventListener('change', e => {
+    const i = e.target; if (!i.dataset.id) return;
+    const tier = last ? last.p.tier : 'standard';
+    const it = ITEMS.find(x => x.id === i.dataset.id), cur = rateFor(it, tier, overrides).slice();
+    const v = parseFloat(i.value); if (!(v >= 0)) return;
+    cur[parseInt(i.dataset.k)] = v;
+    if (cur[0] > cur[1]) cur.sort((a, b) => a - b);
+    overrides[it.id] = overrides[it.id] || {}; overrides[it.id][tier] = cur;
+    saveOv(); render();
+  });
+  $('#resetRates').onclick = () => { overrides = {}; saveOv(); render(); };
+
+  // examples
+  $('#examples').innerHTML = EXAMPLES.map((x, i) => '<button class="ex" data-i="' + i + '">' + esc(x) + '</button>').join('');
+  $('#examples').addEventListener('click', e => { const b = e.target.closest('.ex'); if (!b) return; req.value = EXAMPLES[+b.dataset.i]; render(); req.focus(); });
+
+  let tm; req.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(render, 250); });
+  $('#go').onclick = () => { render(); const o = $('#out'); if (o.firstChild && o.scrollIntoView) { try { o.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } };
+  render();
+})();
+</script>
+</body>
+</html>
