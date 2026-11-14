@@ -81,185 +81,91 @@ tr.tot td{font-weight:700;border-bottom:0}
 .admin input{width:84px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink);font:inherit;text-align:right}
 .admin td:first-child{max-width:330px}
 footer{color:var(--muted);font-size:13px;margin-top:26px}
+
+nav#nav{display:flex;gap:6px;margin:0 0 26px;flex-wrap:wrap}
+nav#nav a{color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:999px;font-weight:500;font-size:15px;border:1px solid transparent}
+nav#nav a:hover{color:var(--ink)}
+nav#nav a.on{background:var(--card);border-color:var(--line);color:var(--ink)}
+nav#nav b{background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:12px;padding:1px 7px;margin-left:4px;font-weight:600}
+nav#nav b:empty{display:none}
+.view{display:none}.view.on{display:block}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 14px}
+@media(max-width:560px){.fgrid{grid-template-columns:1fr}}
+label.f{display:block;font-size:13px;color:var(--muted);font-weight:500}
+label.f input,label.f select,label.f textarea{display:block;width:100%;margin-top:4px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:16px}
+label.f input:focus,label.f select:focus,label.f textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tradepick{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.tradepick label{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;background:var(--card)}
+.tradepick input{accent-color:var(--accent)}
+.err{color:#b3261e;font-size:14px;margin:0 0 10px}
+.ok{color:var(--ok);font-size:14px;margin:8px 0 0;font-weight:500}
+.progress{height:8px;border-radius:6px;background:var(--bar2);overflow:hidden;margin:12px 0 6px}
+.progress i{display:block;height:100%;background:var(--ok);border-radius:6px}
+td.best,.best{color:var(--ok);font-weight:600}
+td.na{color:var(--muted)}
+td small,.sm{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.vin{width:96px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;text-align:right}
+.reqhead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;margin-bottom:6px}
+.pill{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted)}
+.link{background:none;border:0;color:var(--accent);padding:0;font-weight:500;text-decoration:underline}
+.demo{font-size:13px}
+th.vh{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="brand"><div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/></svg></div>BuildBudget</div>
-    <span class="tag">Prototype · Step 1</span>
+    <span class="tag">Prototype · Step 2</span>
   </header>
+  <nav id="nav">
+    <a href="#home" data-r="home">Get a budget</a>
+    <a href="#quotes" data-r="quotes">My quotes<b id="qcount"></b></a>
+    <a href="#vendor" data-r="vendor">For vendors</a>
+  </nav>
 
-  <h1>Tell us what you want to build.</h1>
-  <p class="sub">Write it the way you'd say it. You'll get an itemised budget, every line covered.</p>
-
-  <div class="ask">
-    <textarea id="req" placeholder="Example: I want to build a 3 BHK house on a 200 sq yard plot in Ghaziabad, two floors, standard finish, with a boundary wall." autofocus></textarea>
-    <div class="askbar">
-      <span class="hint">Size, floors, rooms, finish and city help the most. Anything you leave out, we assume.</span>
-      <button class="btn" id="go">Get my budget</button>
+  <section class="view" id="view-home">
+    <h1>Tell us what you want to build.</h1>
+    <p class="sub">Write it the way you'd say it. You'll get an itemised budget, every line covered.</p>
+    <div class="ask">
+      <textarea id="req" placeholder="Example: I want to build a 3 BHK house on a 200 sq yard plot in Ghaziabad, two floors, standard finish, with a boundary wall."></textarea>
+      <div class="askbar">
+        <span class="hint">Size, floors, rooms, finish and city help the most. Anything you leave out, we assume.</span>
+        <button class="btn" id="go">Get my budget</button>
+      </div>
     </div>
-  </div>
-  <div class="examples" id="examples"></div>
+    <div class="examples" id="examples"></div>
+    <div id="out"></div>
+    <details class="admin" id="admin">
+      <summary>For admin: edit rates (indicative placeholders)</summary>
+      <p class="hint">These are starter rates for Delhi NCR residential work. Replace them with verified vendor and contractor rates. Edits apply to the finish level of the current request and are saved in this browser only.</p>
+      <div class="tbl"><table id="rates"></table></div>
+      <p><button class="ghost" id="resetRates">Reset all rates</button></p>
+    </details>
+  </section>
 
-  <div id="out"></div>
+  <section class="view" id="view-quotes">
+    <h1>Your quotes</h1>
+    <p class="sub">As vendors quote, estimated lines turn into real prices and your budget range narrows.</p>
+    <div id="quotesOut"></div>
+  </section>
 
-  <details class="admin" id="admin">
-    <summary>For admin: edit rates (indicative placeholders)</summary>
-    <p class="hint">These are starter rates for Delhi NCR residential work. Replace them with verified vendor and contractor rates. Edits apply to the finish level of the current request and are saved in this browser only.</p>
-    <div class="tbl"><table id="rates"></table></div>
-    <p><button class="ghost" id="resetRates">Reset all rates</button></p>
-  </details>
+  <section class="view" id="view-vendor">
+    <h1>Vendor portal</h1>
+    <p class="sub">Contractors and suppliers: register your trades, see new requests, and send your rates.</p>
+    <div id="vendorOut"></div>
+  </section>
 
-  <footer>Estimates are indicative ranges, not quotations. Final prices depend on site conditions, design and vendor quotes.</footer>
+  <footer>Estimates are indicative ranges, not quotations. Final prices depend on site conditions, design and vendor quotes. Prototype data is stored in this browser only.</footer>
 </div>
-
 <script>
 /*ENGINE*/
 </script>
 <script>
-(function(){
-  const $ = s => document.querySelector(s);
-  const req = $('#req'), out = $('#out');
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const EXAMPLES = [
-    '3 BHK house, 1800 sq ft, G+1, standard finish in Noida',
-    'Villa on a 300 sq yard plot in Gurugram, premium finish, lift and solar',
-    '2 BHK home 1100 sq ft, budget finish, Ghaziabad'
-  ];
-
-  let overrides = {};
-  try { overrides = JSON.parse(localStorage.getItem('bb_rates') || '{}') || {}; } catch (e) { overrides = {}; }
-  const saveOv = () => { try { localStorage.setItem('bb_rates', JSON.stringify(overrides)); } catch (e) {} };
-
-  function inr(n){ return Math.round(n).toLocaleString('en-IN'); }
-  function money(n){
-    if (n >= 1e7) return '₹' + (n / 1e7).toFixed(2) + ' Cr';
-    if (n >= 1e5) return '₹' + (n / 1e5).toFixed(1) + ' L';
-    return '₹' + inr(n);
-  }
-  function qtyFmt(q){ return q >= 100 ? inr(q) : (Math.round(q * 10) / 10).toLocaleString('en-IN'); }
-
-  let last = null; // last successful {p,res,parsed}
-
-  function render(){
-    const text = req.value;
-    if (!text.trim()){ last = null; out.innerHTML = '<div class="empty">Your budget will appear here as you type.</div>'; renderRates(); return; }
-    const parsed = parseRequirement(text);
-
-    if (parsed.blocked){
-      last = null;
-      out.innerHTML = '<div class="card"><p class="eyebrow">Not covered yet</p><h2 style="margin:0 0 6px">This looks like a different type of work.</h2><p class="persq">This first version prices <b>new residential houses</b> only. Renovation, commercial and industrial work are planned for later steps. If you also want a new house priced, describe just that part.</p></div>';
-      renderRates(); return;
-    }
-    if (!parsed.p){
-      last = null;
-      out.innerHTML = '<div class="card"><p class="eyebrow">One more detail</p><h2 style="margin:0 0 6px">How big is it?</h2><p class="persq">Add the size, for example <b>1800 sq ft</b> built-up, or a plot such as <b>200 sq yard plot</b>. The number of bedrooms (like <b>3 BHK</b>) also works.</p></div>';
-      renderRates(); return;
-    }
-
-    const p = parsed.p, res = compute(p, overrides);
-    last = { p, res, parsed };
-
-    const chips = parsed.understood.map(x => '<span class="chip">' + esc(x) + '</span>').join('') +
-                  parsed.assumed.map(x => '<span class="chip a">assumed: ' + esc(x) + '</span>').join('');
-    const warn = parsed.warnings.map(w => '<div class="note">' + esc(w) + '</div>').join('');
-
-    const maxHi = Math.max.apply(null, res.trades.map(t => t.hi));
-    const tradeRows = res.trades.map(t => {
-      const mid = (t.lo + t.hi) / 2, share = Math.round(mid / ((res.subLo + res.subHi) / 2) * 100);
-      return '<div class="trade"><div>' + esc(t.trade) + '<br><span class="hint">' + share + '% of works</span></div>' +
-        '<div class="bar"><i style="width:' + Math.round(t.hi / maxHi * 100) + '%"></i></div>' +
-        '<div class="amt">' + money(t.lo) + ' – ' + money(t.hi) + '</div></div>';
-    }).join('');
-
-    let rows = '', cur = '';
-    for (const l of res.lines){
-      if (l.trade !== cur){ cur = l.trade; rows += '<tr class="g"><td colspan="5">' + esc(cur) + '</td></tr>'; }
-      rows += '<tr><td>' + esc(l.item) + '</td><td>' + qtyFmt(l.qty) + ' ' + esc(l.unit) + '</td><td>₹' + inr(l.rateLo) + ' – ' + inr(l.rateHi) + '</td><td>₹' + inr(l.lo) + '</td><td>₹' + inr(l.hi) + '</td></tr>';
-    }
-    const ex = (label, lo, hi) => '<tr><td colspan="3">' + label + '</td><td>₹' + inr(lo) + '</td><td>₹' + inr(hi) + '</td></tr>';
-    rows += '<tr class="g"><td colspan="5">Add-ons</td></tr>' +
-      ex('Site supervision, scaffolding &amp; contractor margin (' + Math.round(MARKUPS.oh[0]*100) + '–' + Math.round(MARKUPS.oh[1]*100) + '%)', res.ohLo, res.ohHi) +
-      ex('Contingency (' + Math.round(MARKUPS.cont[0]*100) + '–' + Math.round(MARKUPS.cont[1]*100) + '%)', res.contLo, res.contHi) +
-      (p.gst ? ex('GST (' + Math.round(MARKUPS.gst*100) + '%, indicative)', res.gstLo, res.gstHi) : '') +
-      '<tr class="tot"><td colspan="3">Total</td><td>₹' + inr(res.totalLo) + '</td><td>₹' + inr(res.totalHi) + '</td></tr>';
-
-    out.innerHTML =
-      warn +
-      '<div class="card"><p class="eyebrow">Estimated budget</p>' +
-      '<p class="range">' + money(res.totalLo) + '<span>to</span>' + money(res.totalHi) + '</p>' +
-      '<p class="persq">About ₹' + inr(res.perSqftLo) + ' – ' + inr(res.perSqftHi) + ' per sq ft on ' + inr(p.A) + ' sq ft built-up' + (p.gst ? ' (GST included)' : '') + '</p>' +
-      '<div class="chips">' + chips + '</div>' +
-      '<p class="lbl">Not right? Edit your description above and the budget updates.</p></div>' +
-
-      '<div class="card"><h2>Where the money goes</h2>' + tradeRows + '</div>' +
-
-      '<div class="card"><details class="boq"><summary>Full itemised budget (' + res.lines.length + ' items)</summary>' +
-      '<div class="tbl"><table><thead><tr><th>Item</th><th>Quantity</th><th>Rate (₹)</th><th>Low</th><th>High</th></tr></thead><tbody>' + rows + '</tbody></table></div></details></div>' +
-
-      '<div class="card"><h2>Not included</h2><ul class="excl">' +
-      '<li>Land, registry and stamp duty</li><li>Architect, structural engineer and sanction / approval fees</li>' +
-      '<li>Electricity, water and sewer connection charges</li><li>Furniture, curtains, appliances and interior work' + (p.opts.wardrobes || p.opts.falseCeiling ? ' (other than the extras listed)' : '') + '</li>' +
-      '<li>Landscaping, and any soil or site problems found later</li></ul></div>' +
-
-      '<div class="actions"><button class="btn" disabled title="Coming in the next step">Get quotes from vendors (next step)</button>' +
-      '<button class="ghost" id="copy">Copy itemised budget</button></div><div id="copyslot"></div>';
-
-    const c = $('#copy'); if (c) c.onclick = copyBoq;
-    renderRates();
-  }
-
-  function boqText(){
-    const { p, res } = last;
-    const L = ['BUILDBUDGET ESTIMATE (indicative)', 'Area: ' + inr(p.A) + ' sq ft | Floors: ' + p.F + ' | Finish: ' + p.tier + ' | ' + p.loc, ''];
-    let cur = '';
-    for (const l of res.lines){
-      if (l.trade !== cur){ cur = l.trade; L.push(cur.toUpperCase()); }
-      L.push('- ' + l.item + ': ' + qtyFmt(l.qty) + ' ' + l.unit + ' @ Rs ' + inr(l.rateLo) + '-' + inr(l.rateHi) + ' = Rs ' + inr(l.lo) + ' to ' + inr(l.hi));
-    }
-    L.push('', 'Total: Rs ' + inr(res.totalLo) + ' to Rs ' + inr(res.totalHi));
-    return L.join('\n');
-  }
-  function copyBoq(){
-    if (!last) return;
-    const t = boqText();
-    const slot = $('#copyslot');
-    const showBox = () => { slot.innerHTML = '<textarea id="copybox" readonly></textarea>'; const b = $('#copybox'); b.value = t; b.focus(); b.select(); };
-    try { navigator.clipboard.writeText(t).then(() => { slot.innerHTML = '<p class="hint">Copied.</p>'; }, showBox); } catch (e) { showBox(); }
-  }
-
-  function renderRates(){
-    const tier = last ? last.p.tier : 'standard';
-    let h = '<thead><tr><th>Item (' + tier + ' finish)</th><th>Unit</th><th>Low ₹</th><th>High ₹</th></tr></thead><tbody>';
-    for (const it of ITEMS){
-      const r = rateFor(it, tier, overrides);
-      h += '<tr><td>' + esc(it.item) + '</td><td>' + esc(it.unit) + '</td>' +
-        '<td><input type="number" min="0" data-id="' + it.id + '" data-k="0" value="' + r[0] + '"></td>' +
-        '<td><input type="number" min="0" data-id="' + it.id + '" data-k="1" value="' + r[1] + '"></td></tr>';
-    }
-    $('#rates').innerHTML = h + '</tbody>';
-  }
-  $('#rates').addEventListener('change', e => {
-    const i = e.target; if (!i.dataset.id) return;
-    const tier = last ? last.p.tier : 'standard';
-    const it = ITEMS.find(x => x.id === i.dataset.id), cur = rateFor(it, tier, overrides).slice();
-    const v = parseFloat(i.value); if (!(v >= 0)) return;
-    cur[parseInt(i.dataset.k)] = v;
-    if (cur[0] > cur[1]) cur.sort((a, b) => a - b);
-    overrides[it.id] = overrides[it.id] || {}; overrides[it.id][tier] = cur;
-    saveOv(); render();
-  });
-  $('#resetRates').onclick = () => { overrides = {}; saveOv(); render(); };
-
-  // examples
-  $('#examples').innerHTML = EXAMPLES.map((x, i) => '<button class="ex" data-i="' + i + '">' + esc(x) + '</button>').join('');
-  $('#examples').addEventListener('click', e => { const b = e.target.closest('.ex'); if (!b) return; req.value = EXAMPLES[+b.dataset.i]; render(); req.focus(); });
-
-  let tm; req.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(render, 250); });
-  $('#go').onclick = () => { render(); const o = $('#out'); if (o.firstChild && o.scrollIntoView) { try { o.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } };
-  render();
-})();
+/*STORE*/
+</script>
+<script>
+/*APP*/
 </script>
 </body>
 </html>

@@ -186,4 +186,37 @@ function parseRequirement(raw) {
   return out;
 }
 
-if (typeof module !== 'undefined') module.exports = { ITEMS, TIERS, LOCATIONS, MARKUPS, compute, parseRequirement };
+/* ---------- Live budget: estimates replaced by vendor quotes ---------- */
+
+const TRADES = ITEMS.map(i => i.trade).filter((t, i, a) => a.indexOf(t) === i);
+
+/* rfq: { p, lines:[{id,trade,item,unit,qty,lo,hi}] }   quotes: [{vendorId, rates:{lineId: ratePerUnit}}]
+   A line with at least one quote becomes "firm" at the LOWEST quoted amount; other lines stay estimated.
+   Contractor margin/supervision applies only to estimated lines (quotes already include the vendor's margin). */
+function liveBudget(rfq, quotes) {
+  const per = [];
+  const vendorTotals = {};
+  let firm = 0, estLo = 0, estHi = 0, quoted = 0;
+  for (const l of rfq.lines) {
+    const qs = [];
+    for (const q of quotes) {
+      const r = q.rates && parseFloat(q.rates[l.id]);
+      if (r > 0) {
+        const amount = r * l.qty;
+        qs.push({ vendorId: q.vendorId, rate: r, amount });
+        const vt = vendorTotals[q.vendorId] || (vendorTotals[q.vendorId] = { amount: 0, covered: 0 });
+        vt.amount += amount; vt.covered += 1;
+      }
+    }
+    qs.sort((a, b) => a.amount - b.amount);
+    const best = qs[0] || null;
+    if (best) { firm += best.amount; quoted += 1; } else { estLo += l.lo; estHi += l.hi; }
+    per.push({ line: l, quotes: qs, best });
+  }
+  const m = MARKUPS, gst = rfq.p && rfq.p.gst ? 1 + m.gst : 1;
+  const totalLo = (firm * (1 + m.cont[0]) + estLo * (1 + m.oh[0] + m.cont[0])) * gst;
+  const totalHi = (firm * (1 + m.cont[1]) + estHi * (1 + m.oh[1] + m.cont[1])) * gst;
+  return { per, vendorTotals, firm, estLo, estHi, quoted, totalLines: rfq.lines.length, totalLo, totalHi };
+}
+
+if (typeof module !== 'undefined') module.exports = { ITEMS, TIERS, LOCATIONS, MARKUPS, TRADES, compute, parseRequirement, liveBudget };
